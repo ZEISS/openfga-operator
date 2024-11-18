@@ -3,10 +3,12 @@ package controllers
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	openfgav1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
 )
@@ -32,7 +34,25 @@ func NewOpenFGAStoreReconciler(mgr ctrl.Manager) *OpenFGAStoreReconciler {
 
 // Reconcile ...
 func (r *OpenFGAStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	log := log.FromContext(ctx)
+	log.Info("reconcile store")
+
+	store := &openfgav1alpha1.Store{}
+
+	err := r.Get(ctx, req.NamespacedName, store)
+	if err != nil && errors.IsNotFound(err) {
+		// Request object not found, could have been deleted after reconcile request.
+		return reconcile.Result{}, nil
+	}
+
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	err = r.Get(ctx, req.NamespacedName, store)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }

@@ -6,7 +6,7 @@ import (
 
 // StoreSpec defines the desired state of Store
 type StoreSpec struct {
-	StoreRef string `json:"storeRef"`
+	StoreRef string `json:"storeRef,omitempty"`
 	Model    string `json:"model"`
 }
 

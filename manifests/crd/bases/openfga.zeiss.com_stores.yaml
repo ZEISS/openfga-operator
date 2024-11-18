@@ -40,14 +40,10 @@ spec:
             properties:
               model:
                 type: string
-              name:
-                type: string
               storeRef:
                 type: string
             required:
             - model
-            - name
-            - storeRef
             type: object
           status:
             description: StoreStatus defines the observed state of Store
