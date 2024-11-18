@@ -9,5 +9,6 @@ import (
 	_ "github.com/goreleaser/goreleaser"
 	_ "gotest.tools/gotestsum"
 	_ "mvdan.cc/gofumpt"
+	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
 	_ "sigs.k8s.io/kustomize/kustomize/v5"
 )
