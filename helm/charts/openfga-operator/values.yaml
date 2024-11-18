@@ -1,0 +1,209 @@
+# Default values
+
+# -- Provide a name in place of `openfga-operator`
+nameOverride: openfga-operator
+# -- String to fully override `"openfga-operator.fullname"`
+fullnameOverride: ""
+# -- Override the Kubernetes version, which is used to evaluate certain manifests
+kubeVersionOverride: ""
+
+## Custom resource configuration
+crds:
+  # -- Install and upgrade CRDs
+  install: true
+  # -- Keep CRDs on chart uninstall
+  keep: true
+  # -- Annotations to be added to all CRDs
+  annotations: {}
+
+## Globally shared configuration
+global:
+  # -- Common labels for the all resources
+  additionalLabels: {}
+    # app: openfga
+
+  # Default image used by all components
+  image:
+    # -- If defined, a repository applied to all openfga deployments
+    repository: ghcr.io/zeiss/openfga-operator/operator
+    # -- Overrides the global openfga image tag whose default is the chart appVersion
+    tag: "latest"
+    # -- If defined, a imagePullPolicy applied to all openfga deployments
+    imagePullPolicy: IfNotPresent
+
+  # -- Secrets with credentials to pull images from a private registry
+  imagePullSecrets: []
+
+  # -- Labels for the all deployed pods
+  podLabels: {}
+
+   # -- Annotations for the all deployed pods
+  podAnnotations: {}
+
+  # -- Toggle and define pod-level security context.
+  # @default -- `{}` (See [values.yaml])
+  securityContext: {}
+  #  runAsUser: 999
+  #  runAsGroup: 999
+  #  fsGroup: 999
+
+  # -- Mapping between IP and hostnames that will be injected as entries in the pod's hosts files
+  hostAliases: []
+  # - ip: 10.20.30.40
+  #   hostnames:
+  #   - git.myhostname
+
+  networkPolicy:
+    # -- Create NetworkPolicy objects for all components
+    create: false
+    # -- Default deny all ingress traffic
+    defaultDenyIngress: false
+
+## openfga Configs
+configs:
+
+##
+
+## openfga Controller
+controller:
+  # -- openfga controller name string
+  name: openfga-controller
+
+  # -- The number of openfga controller pods to run.
+  # Additional replicas will cause sharding of managed clusters across number of replicas.
+  replicas: 1
+
+  ## openfga controller image
+  image:
+    # -- Repository to use for the openfga controller
+    # @default -- `""` (defaults to global.image.repository)
+    repository: ""
+    # -- Tag to use for the openfga controller
+    # @default -- `""` (defaults to global.image.tag)
+    tag: ""
+    # -- Image pull policy for the openfga controller
+    # @default -- `""` (defaults to global.image.imagePullPolicy)
+    imagePullPolicy: ""
+
+  # -- Secrets with credentials to pull images from a private registry
+  # @default -- `[]` (defaults to global.imagePullSecrets)
+  imagePullSecrets: []
+
+  # -- Additional command line arguments to pass to openfga controller
+  extraArgs: []
+
+  # -- Environment variables to pass to openfga controller
+  env: []
+
+  # -- envFrom to pass to openfga controller
+  # @default -- `[]` (See [values.yaml])
+  envFrom: []
+  # - configMapRef:
+  #     name: config-map-name
+  # - secretRef:
+  #     name: secret-name
+
+  # -- Annotations to be added to openfga controller pods
+  podAnnotations: {}
+
+  # -- Labels to be added to openfga controller pods
+  podLabels: {}
+
+   # -- Additional volumes to the openfga controller pod
+  volumes: []
+
+  # -- [Node selector]
+  nodeSelector: {}
+
+  # -- [Tolerations] for use with node taints
+  tolerations: []
+
+  # -- Assign custom [affinity] rules to the deployment
+  affinity: {}
+
+  # -- openfga controller listening port
+  containerPort: 8081
+
+  # -- Metrics listening port
+  metricsPort: 8080
+
+  # Rediness probe for openfga controller
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+  readinessProbe:
+    # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+    failureThreshold: 3
+    # -- Number of seconds after the container has started before [probe] is initiated
+    initialDelaySeconds: 10
+    # -- How often (in seconds) to perform the [probe]
+    periodSeconds: 10
+    # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+    successThreshold: 1
+    # -- Number of seconds after which the [probe] times out
+    timeoutSeconds: 1
+
+  # -- Assign custom [TopologySpreadConstraints] rules to the openfga controller
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+  ## If labelSelector is left out, it will default to the labelSelector configuration of the deployment
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: topology.kubernetes.io/zone
+  #   whenUnsatisfiable: DoNotSchedule
+
+  # -- Priority class for the openfga controller pods
+  priorityClassName: ""
+
+  # -- Resource limits and requests for the openfga controller pods
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+  # -- Pod security context for the openfga controller pods
+  securityContext:
+    # -- Run the openfga controller as a non-root user
+    allowPrivilegeEscalation: false
+    # -- Drop capabilities for the openfga controller
+    capabilities:
+      drop:
+        - ALL
+
+  serviceAccount:
+    # -- Create a service account for the openfga controller
+    create: true
+    # -- Service account name
+    name: openfga-controller
+    # -- Annotations applied to created service account
+    annotations: {}
+    # -- Labels applied to created service account
+    labels: {}
+    # -- Automount API credentials for the Service Account
+    automountServiceAccountToken: true
+
+  # -- Init containers to add to the openfga controller pod
+  initContainers: []
+
+  # -- Sidecar containers to add to the openfga controller pod
+  kubeRbacProxy:
+    args:
+      - --secure-listen-address=0.0.0.0:8443
+      - --upstream=http://127.0.0.1:8080/
+      - --logtostderr=true
+      - --v=0
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    image:
+      repository: gcr.io/kubebuilder/kube-rbac-proxy
+      tag: v0.13.1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 5m
+        memory: 64Mi

@@ -1,0 +1,97 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "openfga-operator.fullname" . }}-manager-role
+  labels:
+  {{- include "openfga-operator.labels" . | nindent 4 }}
+rules:
+- resources:
+  - secrets
+  apiGroups:
+  - ""
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsaccounts/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsaccounts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsoperators
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsoperators/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsoperators/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsusers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsusers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - openfga.zeiss.com
+  resources:
+  - natsusers/status
+  verbs:
+  - get
+  - patch
+  - update

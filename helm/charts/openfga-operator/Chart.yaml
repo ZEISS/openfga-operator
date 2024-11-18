@@ -1,0 +1,18 @@
+apiVersion: v2
+type: application
+kubeVersion: ">=1.26.0-0"
+description: |
+  A helm chart for the openfga-operator that provides NATS accounting.
+name: openfga-operator
+version: 0.0.1
+appVersion: "0.0.1"
+home: https://github.com/zeiss/openfga-operator
+sources:
+  - https://github.com/zeiss/openfga-operator/tree/main/helm/charts/openfga-operator
+  - https://github.com/zeiss/openfga-operator
+keywords:
+  - nats
+  - accounting
+maintainers:
+  - name: Sebastian Doell
+    url: https://github.com/katallaxie

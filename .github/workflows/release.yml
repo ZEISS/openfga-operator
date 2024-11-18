@@ -1,0 +1,69 @@
+# .github/workflows/release.yml
+
+name: Release
+
+on:
+  workflow_call:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  IMAGE_NAME: zeiss/natz-operator
+  REGISTRY: ghcr.io
+      
+jobs:
+  test:
+    permissions:
+      checks: write
+    uses: ./.github/workflows/main.yml
+
+  release:
+    needs: [test]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - run: |
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./go.mod
+          cache-dependency-path: |
+            go.sum
+            tools/go.sum
+      - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: image-tag
+        run: |
+          IMAGE_TAG=${GITHUB_SHA}
+          [[ ${GITHUB_REF_TYPE} == "tag" ]] && IMAGE_TAG=${GITHUB_REF_NAME}
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+      - run: sudo apt-get update && sudo apt install -y libxml2-dev libxslt1-dev liblzma-dev zlib1g-dev
+      - run: |
+          IMAGE_TAG=${{ steps.image-tag.outputs.IMAGE_TAG }} make release
+        env:
+          KO_DOCKER_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          DIST_DIR: /tmp/dist
+        if: success()
+      - run: |
+          go run internal/updater/main.go --file helm/charts/natz-operator/Chart.yaml --version ${{ env.RELEASE_VERSION }}
+          go run internal/updater/main.go --file helm/charts/account-server/Chart.yaml --version ${{ env.RELEASE_VERSION }}
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.11.2
+      - uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: helm/charts
+          config: helm/cr.yaml
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
