@@ -25,9 +25,9 @@ func NewOpenFGAStoreReconciler(mgr ctrl.Manager) *OpenFGAStoreReconciler {
 	}
 }
 
-//+kubebuilder:rbac:groups=openfga.zeiss.com,resources=natsoperators,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=openfga.zeiss.com,resources=natsoperators/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=openfga.zeiss.com,resources=natsoperators/finalizers,verbs=update
+//+kubebuilder:rbac:groups=openfga.zeiss.com,resources=stores,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=openfga.zeiss.com,resources=stores/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=openfga.zeiss.com,resources=stores/finalizers,verbs=update
 //+kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile ...
@@ -40,6 +40,6 @@ func (r *OpenFGAStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 // SetupWithManager sets up the controller with the Manager.
 func (r *OpenFGAStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&openfgav1alpha1.OpenFGAStore{}).
+		For(&openfgav1alpha1.Store{}).
 		Complete(r)
 }

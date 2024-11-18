@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	natzv1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
+	openfgav1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
 	"github.com/zeiss/openfga-operator/controllers"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -53,7 +53,7 @@ func init() {
 
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(natzv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(openfgav1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

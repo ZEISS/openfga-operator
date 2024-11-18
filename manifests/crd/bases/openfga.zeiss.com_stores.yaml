@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.3
-  name: openfgastores.openfga.zeiss.com
+  name: stores.openfga.zeiss.com
 spec:
   group: openfga.zeiss.com
   names:
-    kind: OpenFGAStore
-    listKind: OpenFGAStoreList
-    plural: openfgastores
-    singular: openfgastore
+    kind: Store
+    listKind: StoreList
+    plural: stores
+    singular: store
   scope: Namespaced
   versions:
   - name: v1alpha1
@@ -36,12 +36,34 @@ spec:
           metadata:
             type: object
           spec:
-            type: object
-          status:
+            description: StoreSpec defines the desired state of Store
             properties:
-              storeID:
+              model:
+                type: string
+              name:
+                type: string
+              storeRef:
                 type: string
             required:
+            - model
+            - name
+            - storeRef
+            type: object
+          status:
+            description: StoreStatus defines the observed state of Store
+            properties:
+              controlPaused:
+                description: ControlPaused indicates the operator pauses the control
+                  of the store.
+                type: boolean
+              phase:
+                description: Phase is the current state of Store.
+                type: string
+              storeID:
+                description: StoreID is the unique identifier of the store.
+                type: string
+            required:
+            - phase
             - storeID
             type: object
         type: object

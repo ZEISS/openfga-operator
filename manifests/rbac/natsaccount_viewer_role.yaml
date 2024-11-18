@@ -1,0 +1,27 @@
+# permissions for end users to view natsaccounts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: natsaccount-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: openfga-operator
+    app.kubernetes.io/part-of: openfga-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: natsaccount-viewer-role
+rules:
+  - apiGroups:
+      - openfga.zeiss.com
+    resources:
+      - natsaccounts
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - openfga.zeiss.com
+    resources:
+      - natsaccounts/status
+    verbs:
+      - get

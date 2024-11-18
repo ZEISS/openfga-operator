@@ -1,0 +1,11 @@
+apiVersion: openfga.zeiss.com/v1alpha1
+kind: NatsAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: natsaccount
+    app.kubernetes.io/instance: natsaccount-sample
+    app.kubernetes.io/part-of: openfga-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: openfga-operator
+  name: natsaccount-sample
+spec:
