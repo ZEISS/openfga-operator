@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
   cmd = "go build -o ./tmp/main cmd/main.go"
   bin = "./tmp/main"
-  full_bin = "export $(grep -v '^#' .env | xargs); dlv exec ./tmp/main --listen=127.0.0.1:2345 --headless=true --api-version=2 --accept-multiclient --continue --log -- "
+  full_bin = "export $(grep -v '^#' .env | xargs); dlv exec ./tmp/main --listen=127.0.0.1:2345 --headless=true --api-version=2 --accept-multiclient --continue --log -- --metrics-bind-address :8084 --health-probe-bind-address :8085 "
   delay = 1000 # ms
   exclude_dir = ["assets", "tmp", "vendor"]
   include_ext = ["go", "tpl", "tmpl", "html"]

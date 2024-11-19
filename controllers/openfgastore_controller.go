@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 
+	fga "github.com/zeiss/openfga-operator/pkg/client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -16,14 +17,16 @@ import (
 // OpenFGAStoreReconciler ...
 type OpenFGAStoreReconciler struct {
 	client.Client
+	FGA    *fga.Client
 	Scheme *runtime.Scheme
 }
 
 // NewOpenFGAStoreReconciler ...
-func NewOpenFGAStoreReconciler(mgr ctrl.Manager) *OpenFGAStoreReconciler {
+func NewOpenFGAStoreReconciler(fga *fga.Client, mgr ctrl.Manager) *OpenFGAStoreReconciler {
 	return &OpenFGAStoreReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		FGA:    fga,
 	}
 }
 
@@ -49,7 +52,36 @@ func (r *OpenFGAStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return reconcile.Result{}, err
 	}
 
+	if store.Status.Phase == openfgav1alpha1.StorePhaseSynchronized {
+		return reconcile.Result{}, nil
+	}
+
+	// get the latest version of octopinger instance before reconciling
 	err = r.Get(ctx, req.NamespacedName, store)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	store.Status.Phase = openfgav1alpha1.StorePhaseCreating
+	err = r.Status().Update(ctx, store)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// get the latest version of octopinger instance before reconciling
+	err = r.Get(ctx, req.NamespacedName, store)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	createdStore, err := r.FGA.CreateStore(ctx, store.Name)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	store.Status.Phase = openfgav1alpha1.StorePhaseSynchronized
+	store.Status.StoreID = createdStore.ID
+	err = r.Status().Update(ctx, store)
 	if err != nil {
 		return reconcile.Result{}, err
 	}

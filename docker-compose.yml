@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    networks:
+      - service-lens
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=default
+    volumes:
+      - pg:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: openfga/openfga:latest
+    container_name: migrate
+    command: migrate
+    networks:
+      - service-lens
+    environment:
+      - OPENFGA_DATASTORE_ENGINE=postgres
+      - OPENFGA_DATASTORE_URI=postgres://postgres:password@postgres:5432/postgres?sslmode=disable
+
+  openfga:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    image: openfga/openfga:latest
+    container_name: openfga
+    networks:
+      - service-lens
+    environment:
+      - OPENFGA_DATASTORE_ENGINE=postgres
+      - OPENFGA_DATASTORE_URI=postgres://postgres:password@postgres:5432/postgres?sslmode=disable
+      - OPENFGA_LOG_FORMAT=json
+    command: run
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "3000:3000"
+
+networks:
+  service-lens:
+
+
+volumes:
+  pg: {}

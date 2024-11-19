@@ -38,12 +38,8 @@ spec:
           spec:
             description: StoreSpec defines the desired state of Store
             properties:
-              model:
-                type: string
               storeRef:
                 type: string
-            required:
-            - model
             type: object
           status:
             description: StoreStatus defines the observed state of Store

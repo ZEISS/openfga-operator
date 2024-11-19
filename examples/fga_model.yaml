@@ -1,5 +1,5 @@
 apiVersion: openfga.zeiss.com/v1alpha1
-kind: Store
+kind: Model
 metadata:
   name: demo1
 spec:

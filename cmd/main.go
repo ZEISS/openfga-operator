@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	openfgav1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
 	"github.com/zeiss/openfga-operator/controllers"
+	"github.com/zeiss/openfga-operator/internal/config"
+	"github.com/zeiss/openfga-operator/pkg/client"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -87,7 +89,18 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	err = setupControllers(mgr)
+	cfg := config.New()
+	err = cfg.Marshal()
+	if err != nil {
+		return err
+	}
+
+	fga, err := client.NewClient(cfg.OpenFGAURL)
+	if err != nil {
+		return err
+	}
+
+	err = setupControllers(fga, mgr)
 	if err != nil {
 		return err
 	}
@@ -112,8 +125,8 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func setupControllers(mgr ctrl.Manager) error {
-	err := controllers.NewOpenFGAStoreReconciler(mgr).SetupWithManager(mgr)
+func setupControllers(fga *client.Client, mgr ctrl.Manager) error {
+	err := controllers.NewOpenFGAStoreReconciler(fga, mgr).SetupWithManager(mgr)
 	if err != nil {
 		return err
 	}
