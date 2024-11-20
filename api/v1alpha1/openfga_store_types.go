@@ -4,6 +4,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	AnnotationPrefix = "openfga.zeiss.com/auth."
+	FinalizerName    = "openfga.zeiss.com/finalizer"
+)
+
 // StoreSpec defines the desired state of Store
 type StoreSpec struct {
 	StoreRef string `json:"storeRef,omitempty"`
