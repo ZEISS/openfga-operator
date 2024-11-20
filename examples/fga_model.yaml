@@ -3,6 +3,8 @@ kind: Model
 metadata:
   name: demo1
 spec:
+  storeRef:
+    name: demo1
   model: |
     model
       schema 1.1

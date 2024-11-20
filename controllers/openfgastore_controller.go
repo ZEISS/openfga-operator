@@ -148,7 +148,7 @@ func (r *OpenFGAStoreReconciler) reconcileStore(ctx context.Context, store *open
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (r *OpenFGAStoreReconciler) reconcileStatus(ctx context.Context, store *openfgav1alpha1.Store) error {
@@ -191,12 +191,4 @@ func (r *OpenFGAStoreReconciler) reconcileDelete(ctx context.Context, s *openfga
 	}
 
 	return nil
-
-	// s.SetFinalizers(finalizers.RemoveFinalizer(s, openfgav1alpha1.FinalizerName))
-	// err = r.Update(ctx, s)
-	// if err != nil {
-	// 	return reconcile.Result{}, client.IgnoreNotFound(err)
-	// }
-
-	// return reconcile.Result{}, nil
 }

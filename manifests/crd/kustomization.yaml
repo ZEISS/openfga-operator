@@ -3,6 +3,7 @@
 # It should be run by config/default
 resources:
   - bases/openfga.zeiss.com_stores.yaml
+  - bases/openfga.zeiss.com_models.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
