@@ -4,6 +4,7 @@ import (
 	"context"
 
 	openfgav1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
+	"github.com/zeiss/pkg/k8s"
 	"github.com/zeiss/pkg/k8s/finalizers"
 	"github.com/zeiss/pkg/utilx"
 
@@ -13,6 +14,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -61,6 +63,18 @@ func (r *OpenFGAModelReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return reconcile.Result{}, err
 	}
 
+	if !model.ObjectMeta.DeletionTimestamp.IsZero() {
+		if finalizers.HasFinalizer(model, openfgav1alpha1.FinalizerName) {
+			err := r.reconcileDelete(ctx, model)
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+
+			// Delete
+			return reconcile.Result{}, nil
+		}
+	}
+
 	if err := r.reconcileResources(ctx, model); err != nil {
 		return reconcile.Result{}, err
 	}
@@ -76,10 +90,60 @@ func (r *OpenFGAModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *OpenFGAModelReconciler) reconcileResources(ctx context.Context, model *openfgav1alpha1.Model) error {
+	log := log.FromContext(ctx)
+
+	err := r.reconcileStatus(ctx, model)
+	if err != nil {
+		log.Error(err, "failed to reconcile status", "name", model.Name, "namespace", model.Namespace)
+		return err
+	}
+
+	err = r.reconcileModel(ctx, model)
+	if err != nil {
+		log.Error(err, "failed to reconcile model", "name", model.Name, "namespace", model.Namespace)
+		return err
+	}
+
 	return nil
 }
 
-func (r *OpenFGAModelReconciler) reconcileStore(ctx context.Context, model *openfgav1alpha1.Model) error {
+func (r *OpenFGAModelReconciler) reconcileModel(ctx context.Context, model *openfgav1alpha1.Model) error {
+	log := log.FromContext(ctx)
+
+	log.Info("reconcile model", "name", model.Name, "namespace", model.Namespace)
+
+	if utilx.NotEmpty(model.Status.InstanceID) {
+		return nil
+	}
+
+	store := &openfgav1alpha1.Store{}
+	err := k8s.FetchObject(ctx, r.Client, model.Namespace, model.Spec.StoreRef.Name, store)
+	if err != nil {
+		return err
+	}
+
+	m, err := r.FGA.UpdateModel(ctx, store.Status.StoreID, model.Spec.Model)
+	if err != nil {
+		return err
+	}
+
+	err = controllerutil.SetControllerReference(store, model, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	model.Finalizers = finalizers.AddFinalizer(model, openfgav1alpha1.FinalizerName)
+	err = r.Update(ctx, model)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+
+	model.Status.InstanceID = m.ID
+	err = r.Status().Update(ctx, model)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -106,18 +170,13 @@ func (r *OpenFGAModelReconciler) reconcileStatus(ctx context.Context, model *ope
 	return nil
 }
 
-func (r *OpenFGAModelReconciler) reconcileDelete(ctx context.Context, s *openfgav1alpha1.Store) error {
+func (r *OpenFGAModelReconciler) reconcileDelete(ctx context.Context, model *openfgav1alpha1.Model) error {
 	log := log.FromContext(ctx)
 
-	log.Info("delete store", "name", s.Name, "namespace", s.Namespace)
+	log.Info("delete model", "name", model.Name, "namespace", model.Namespace)
 
-	err := r.FGA.DeleteStore(ctx, s.Status.StoreID)
-	if err != nil {
-		return err
-	}
-
-	s.SetFinalizers(finalizers.RemoveFinalizer(s, openfgav1alpha1.FinalizerName))
-	err = r.Update(ctx, s)
+	model.SetFinalizers(finalizers.RemoveFinalizer(model, openfgav1alpha1.FinalizerName))
+	err := r.Update(ctx, model)
 	if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
