@@ -126,12 +126,12 @@ func run(ctx context.Context) error {
 }
 
 func setupControllers(fga *client.Client, mgr ctrl.Manager) error {
-	err := controllers.NewOpenFGAStoreReconciler(fga, mgr).SetupWithManager(mgr)
+	err := controllers.NewStoreReconciler(fga, mgr).SetupWithManager(mgr)
 	if err != nil {
 		return err
 	}
 
-	err = controllers.NewOpenFGAModelReconciler(fga, mgr).SetupWithManager(mgr)
+	err = controllers.NewModelReconciler(fga, mgr).SetupWithManager(mgr)
 	if err != nil {
 		return err
 	}

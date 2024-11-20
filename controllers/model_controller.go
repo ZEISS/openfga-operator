@@ -19,8 +19,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// OpenFGAModelReconciler ...
-type OpenFGAModelReconciler struct {
+// ModelReconciler ...
+type ModelReconciler struct {
 	client.Client
 	Clock
 	FGA      *fga.Client
@@ -28,9 +28,9 @@ type OpenFGAModelReconciler struct {
 	Recorder record.EventRecorder
 }
 
-// NewOpenFGAModelReconciler ...
-func NewOpenFGAModelReconciler(fga *fga.Client, mgr ctrl.Manager) *OpenFGAModelReconciler {
-	return &OpenFGAModelReconciler{
+// NewModelReconciler ...
+func NewModelReconciler(fga *fga.Client, mgr ctrl.Manager) *ModelReconciler {
+	return &ModelReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorderFor(EventRecorderLabel),
@@ -44,7 +44,7 @@ func NewOpenFGAModelReconciler(fga *fga.Client, mgr ctrl.Manager) *OpenFGAModelR
 //+kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile ...
-func (r *OpenFGAModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	log.Info("reconcile model", "name", req.Name, "namespace", req.Namespace)
@@ -83,13 +83,13 @@ func (r *OpenFGAModelReconciler) Reconcile(ctx context.Context, req ctrl.Request
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *OpenFGAModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openfgav1alpha1.Model{}).
 		Complete(r)
 }
 
-func (r *OpenFGAModelReconciler) reconcileResources(ctx context.Context, model *openfgav1alpha1.Model) error {
+func (r *ModelReconciler) reconcileResources(ctx context.Context, model *openfgav1alpha1.Model) error {
 	log := log.FromContext(ctx)
 
 	err := r.reconcileStatus(ctx, model)
@@ -107,7 +107,7 @@ func (r *OpenFGAModelReconciler) reconcileResources(ctx context.Context, model *
 	return nil
 }
 
-func (r *OpenFGAModelReconciler) reconcileModel(ctx context.Context, model *openfgav1alpha1.Model) error {
+func (r *ModelReconciler) reconcileModel(ctx context.Context, model *openfgav1alpha1.Model) error {
 	log := log.FromContext(ctx)
 
 	log.Info("reconcile model", "name", model.Name, "namespace", model.Namespace)
@@ -127,7 +127,7 @@ func (r *OpenFGAModelReconciler) reconcileModel(ctx context.Context, model *open
 		return err
 	}
 
-	err = controllerutil.SetControllerReference(store, model, r.Scheme)
+	err = controllerutil.SetOwnerReference(store, model, r.Scheme)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (r *OpenFGAModelReconciler) reconcileModel(ctx context.Context, model *open
 	return nil
 }
 
-func (r *OpenFGAModelReconciler) reconcileStatus(ctx context.Context, model *openfgav1alpha1.Model) error {
+func (r *ModelReconciler) reconcileStatus(ctx context.Context, model *openfgav1alpha1.Model) error {
 	log := log.FromContext(ctx)
 	log.Info("change status", "name", model.Name, "namespace", model.Namespace)
 
@@ -170,7 +170,7 @@ func (r *OpenFGAModelReconciler) reconcileStatus(ctx context.Context, model *ope
 	return nil
 }
 
-func (r *OpenFGAModelReconciler) reconcileDelete(ctx context.Context, model *openfgav1alpha1.Model) error {
+func (r *ModelReconciler) reconcileDelete(ctx context.Context, model *openfgav1alpha1.Model) error {
 	log := log.FromContext(ctx)
 
 	log.Info("delete model", "name", model.Name, "namespace", model.Namespace)

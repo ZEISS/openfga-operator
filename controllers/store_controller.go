@@ -30,8 +30,8 @@ const (
 	EventReasonStoreUpdateFailed EventReason = "StoreUpdateFailed"
 )
 
-// OpenFGAStoreReconciler ...
-type OpenFGAStoreReconciler struct {
+// StoreReconciler ...
+type StoreReconciler struct {
 	client.Client
 	Clock
 	FGA      *fga.Client
@@ -39,9 +39,9 @@ type OpenFGAStoreReconciler struct {
 	Recorder record.EventRecorder
 }
 
-// NewOpenFGAStoreReconciler ...
-func NewOpenFGAStoreReconciler(fga *fga.Client, mgr ctrl.Manager) *OpenFGAStoreReconciler {
-	return &OpenFGAStoreReconciler{
+// NewStoreReconciler ...
+func NewStoreReconciler(fga *fga.Client, mgr ctrl.Manager) *StoreReconciler {
+	return &StoreReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorderFor(EventRecorderLabel),
@@ -59,7 +59,7 @@ type Clock interface {
 //+kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile ...
-func (r *OpenFGAStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *StoreReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	log.Info("reconcile store", "name", req.Name, "namespace", req.Namespace)
@@ -98,13 +98,13 @@ func (r *OpenFGAStoreReconciler) Reconcile(ctx context.Context, req ctrl.Request
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *OpenFGAStoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *StoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openfgav1alpha1.Store{}).
 		Complete(r)
 }
 
-func (r *OpenFGAStoreReconciler) reconcileResources(ctx context.Context, s *openfgav1alpha1.Store) error {
+func (r *StoreReconciler) reconcileResources(ctx context.Context, s *openfgav1alpha1.Store) error {
 	log := log.FromContext(ctx)
 
 	err := r.reconcileStatus(ctx, s)
@@ -122,7 +122,7 @@ func (r *OpenFGAStoreReconciler) reconcileResources(ctx context.Context, s *open
 	return nil
 }
 
-func (r *OpenFGAStoreReconciler) reconcileStore(ctx context.Context, store *openfgav1alpha1.Store) error {
+func (r *StoreReconciler) reconcileStore(ctx context.Context, store *openfgav1alpha1.Store) error {
 	log := log.FromContext(ctx)
 
 	log.Info("reconcile resource", "name", store.Name, "namespace", store.Namespace)
@@ -151,7 +151,7 @@ func (r *OpenFGAStoreReconciler) reconcileStore(ctx context.Context, store *open
 	return nil
 }
 
-func (r *OpenFGAStoreReconciler) reconcileStatus(ctx context.Context, store *openfgav1alpha1.Store) error {
+func (r *StoreReconciler) reconcileStatus(ctx context.Context, store *openfgav1alpha1.Store) error {
 	log := log.FromContext(ctx)
 	log.Info("reconcile status", "name", store.Name, "namespace", store.Namespace)
 
@@ -174,7 +174,7 @@ func (r *OpenFGAStoreReconciler) reconcileStatus(ctx context.Context, store *ope
 	return nil
 }
 
-func (r *OpenFGAStoreReconciler) reconcileDelete(ctx context.Context, s *openfgav1alpha1.Store) error {
+func (r *StoreReconciler) reconcileDelete(ctx context.Context, s *openfgav1alpha1.Store) error {
 	log := log.FromContext(ctx)
 
 	log.Info("reconcile delete store", "name", s.Name, "namespace", s.Namespace)
