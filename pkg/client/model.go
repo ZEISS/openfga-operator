@@ -70,11 +70,32 @@ func (c *Client) GetAuthorizationModel(ctx context.Context, store, model string)
 		return nil, err
 	}
 
+	j, err := resp.GetAuthorizationModel().MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := transformer.TransformJSONStringToDSL(string(j))
+	if err != nil {
+		return nil, err
+	}
+
 	authModel := AuthorizationModel{
-		ID: resp.AuthorizationModel.GetId(),
+		ID:   resp.AuthorizationModel.GetId(),
+		Spec: cast.Value(m),
 	}
 
 	return cast.Ptr(authModel), nil
+}
+
+// NeedsUpdate ...
+func (c *Client) NeedsUpdate(ctx context.Context, store, model, update string) (bool, error) {
+	m, err := c.GetAuthorizationModel(ctx, store, model)
+	if err != nil {
+		return false, err
+	}
+
+	return m.Spec != update, nil
 }
 
 // DeleteAuthorizationModel ...

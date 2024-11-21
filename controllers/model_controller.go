@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -86,6 +87,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openfgav1alpha1.Model{}).
+		WithEventFilter(predicate.Or(predicate.GenerationChangedPredicate{}, predicate.LabelChangedPredicate{})).
 		Complete(r)
 }
 
@@ -112,19 +114,20 @@ func (r *ModelReconciler) reconcileModel(ctx context.Context, model *openfgav1al
 
 	log.Info("reconcile model", "name", model.Name, "namespace", model.Namespace)
 
-	if utilx.NotEmpty(model.Status.InstanceID) {
-		return nil
-	}
-
 	store := &openfgav1alpha1.Store{}
 	err := k8s.FetchObject(ctx, r.Client, model.Namespace, model.Spec.StoreRef.Name, store)
 	if err != nil {
 		return err
 	}
 
+	log.Info("update model in store", "name", store.Name, "namespace", store.Namespace)
+
 	m, err := r.FGA.UpdateModel(ctx, store.Status.StoreID, model.Spec.Model)
 	if err != nil {
-		return err
+		log.Error(err, "failed to update model", "name", model.Name, "namespace", model.Namespace)
+
+		model.Status.Phase = openfgav1alpha1.ModelPhaseFailed
+		return r.Status().Update(ctx, model)
 	}
 
 	err = controllerutil.SetOwnerReference(store, model, r.Scheme)
@@ -149,6 +152,7 @@ func (r *ModelReconciler) reconcileModel(ctx context.Context, model *openfgav1al
 
 func (r *ModelReconciler) reconcileStatus(ctx context.Context, model *openfgav1alpha1.Model) error {
 	log := log.FromContext(ctx)
+
 	log.Info("change status", "name", model.Name, "namespace", model.Namespace)
 
 	phase := openfgav1alpha1.ModelPhaseNone
