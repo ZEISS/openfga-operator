@@ -4,11 +4,13 @@ import (
 	"context"
 
 	openfgav1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
+	"github.com/zeiss/pkg/cast"
 	"github.com/zeiss/pkg/k8s"
 	"github.com/zeiss/pkg/k8s/finalizers"
 	"github.com/zeiss/pkg/utilx"
 
 	fga "github.com/zeiss/openfga-operator/pkg/client"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -18,6 +20,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+)
+
+const (
+	ModelAnnotationPrefix  = "openfga.zeiss.com/model."
+	ModelUpdatedAnnotation = ModelAnnotationPrefix + "updated-at"
+)
+
+const (
+	EventReasonModelCreated EventReason = "ModelCreated"
+	EventReasonModelUpdated EventReason = "ModelUpdated"
+	EventReasonModelDeleted EventReason = "ModelDeleted"
+	EventReasonModelFailed  EventReason = "ModelFailed"
 )
 
 // ModelReconciler ...
@@ -142,10 +156,13 @@ func (r *ModelReconciler) reconcileModel(ctx context.Context, model *openfgav1al
 	}
 
 	model.Status.InstanceID = m.ID
+	model.Status.Phase = openfgav1alpha1.ModelPhaseSynchronized
 	err = r.Status().Update(ctx, model)
 	if err != nil {
 		return err
 	}
+
+	r.Recorder.Event(model, corev1.EventTypeNormal, cast.String(EventReasonModelUpdated), "model updated")
 
 	return nil
 }

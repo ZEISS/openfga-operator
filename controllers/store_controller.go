@@ -10,15 +10,12 @@ import (
 	"github.com/zeiss/pkg/cast"
 	"github.com/zeiss/pkg/k8s/finalizers"
 	"github.com/zeiss/pkg/utilx"
-	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -109,45 +106,8 @@ func (r *StoreReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&openfgav1alpha1.Store{}).
 		Owns(&openfgav1alpha1.Model{}).
-		Watches(
-			&appv1.Deployment{},
-			r.enqueueRequestForDeployment(),
-			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
-		).
 		WithEventFilter(predicate.Or(predicate.GenerationChangedPredicate{}, predicate.LabelChangedPredicate{})).
 		Complete(r)
-}
-
-func (r *StoreReconciler) enqueueRequestForDeployment() handler.EventHandler {
-	return handler.EnqueueRequestsFromMapFunc(r.enqueueFromIndex())
-}
-
-func (r *StoreReconciler) enqueueFromIndex() handler.MapFunc {
-	return func(ctx context.Context, o client.Object) []reconcile.Request {
-		return r.enqueue(ctx, &client.ListOptions{})
-	}
-}
-
-func (r *StoreReconciler) enqueue(ctx context.Context, opts *client.ListOptions) []reconcile.Request {
-	log := log.FromContext(ctx)
-
-	log.Info("enqueue request", "opts", opts)
-
-	stores := &openfgav1alpha1.StoreList{}
-	err := r.List(ctx, stores, opts)
-	if err != nil {
-		log.Error(err, "failed to list stores")
-		return nil
-	}
-
-	var requests []reconcile.Request
-	for _, store := range stores.Items {
-		requests = append(requests, reconcile.Request{
-			NamespacedName: client.ObjectKeyFromObject(&store),
-		})
-	}
-
-	return requests
 }
 
 func (r *StoreReconciler) reconcileResources(ctx context.Context, s *openfgav1alpha1.Store) error {

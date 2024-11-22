@@ -136,6 +136,11 @@ func setupControllers(fga *client.Client, mgr ctrl.Manager) error {
 		return err
 	}
 
+	err = controllers.NewPodReconciler(fga, mgr).SetupWithManager(mgr)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
