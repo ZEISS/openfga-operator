@@ -7,7 +7,9 @@ import (
 
 	openfgav1alpha1 "github.com/zeiss/openfga-operator/api/v1alpha1"
 	fga "github.com/zeiss/openfga-operator/pkg/client"
+	"github.com/zeiss/pkg/cast"
 	"github.com/zeiss/pkg/mapx"
+	"github.com/zeiss/pkg/slices"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,6 +20,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+)
+
+const (
+	EventReasonDeploymentEnvUpdated EventReason = "DeploymentEnvUpdated"
 )
 
 // PodReconciler ...
@@ -108,6 +114,12 @@ func (r *PodReconciler) reconcileResources(ctx context.Context, deployment *apps
 	}
 
 	for i, container := range deployment.Spec.Template.Spec.Containers {
+		if slices.Any(func(v corev1.EnvVar) bool {
+			return v.Name == "OPENFGA_MODEL_INSTANCE_ID"
+		}, container.Env...) {
+			continue
+		}
+
 		deployment.Spec.Template.Spec.Containers[i].Env = append(container.Env, corev1.EnvVar{
 			Name:  "OPENFGA_MODEL_INSTANCE_ID",
 			Value: model.Status.InstanceID,
@@ -117,12 +129,15 @@ func (r *PodReconciler) reconcileResources(ctx context.Context, deployment *apps
 	if mapx.Exists(annotations, ModelUpdatedAnnotation) {
 		return nil
 	}
+
 	annotations[ModelUpdatedAnnotation] = time.Now().Format(time.RFC3339)
 	deployment.SetAnnotations(annotations)
 
 	if err := r.Update(ctx, deployment); err != nil {
 		return err
 	}
+
+	r.Recorder.Event(deployment, corev1.EventTypeNormal, cast.String(EventReasonDeploymentEnvUpdated), "OpenFGA model instance added to the environment")
 
 	return nil
 }
