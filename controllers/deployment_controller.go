@@ -113,17 +113,29 @@ func (r *PodReconciler) reconcileResources(ctx context.Context, deployment *apps
 		return client.IgnoreNotFound(err)
 	}
 
-	for i, container := range deployment.Spec.Template.Spec.Containers {
-		if slices.Any(func(v corev1.EnvVar) bool {
-			return v.Name == "OPENFGA_MODEL_INSTANCE_ID"
-		}, container.Env...) {
-			continue
-		}
+	store := &openfgav1alpha1.Store{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      model.Spec.StoreRef.Name,
+			Namespace: deployment.Namespace,
+		},
+	}
+	if err := r.Get(ctx, client.ObjectKeyFromObject(store), store); err != nil {
+		return client.IgnoreNotFound(err)
+	}
 
-		deployment.Spec.Template.Spec.Containers[i].Env = append(container.Env, corev1.EnvVar{
+	env := []corev1.EnvVar{
+		{
 			Name:  "OPENFGA_MODEL_INSTANCE_ID",
 			Value: model.Status.InstanceID,
-		})
+		},
+		{
+			Name:  "OPENFGA_MODEL_STORE_ID",
+			Value: store.Status.StoreID,
+		},
+	}
+
+	for i, container := range deployment.Spec.Template.Spec.Containers {
+		deployment.Spec.Template.Spec.Containers[i].Env = slices.Unique(func(v corev1.EnvVar) string { return v.Name }, slices.Append(env, container.Env...)...)
 	}
 
 	if mapx.Exists(annotations, ModelUpdatedAnnotation) {
