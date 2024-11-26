@@ -56,7 +56,7 @@ jobs:
           DIST_DIR: /tmp/dist
         if: success()
       - run: |
-          go run internal/updater/main.go --file helm/charts/openfga-operator/Chart.yaml --version ${{ env.RELEASE_VERSION }}
+          go run -modfile ./tools/go.mod github.com/zeiss/pkg/cmd/helm/update --file helm/charts/openfga-operator/Chart.yaml --version ${{ env.RELEASE_VERSION }}
       - uses: azure/setup-helm@v4
         with:
           version: v3.11.2
