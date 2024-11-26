@@ -1,4 +1,4 @@
-# NATZ Operator Helm Chart
+# OpenFGA Operator Helm Chart
 
 ```bash
 helm repo add openfga-operator https://zeiss.github.io/openfga-operator/helm/charts
