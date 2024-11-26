@@ -9,7 +9,7 @@ require (
 	github.com/openfga/go-sdk v0.6.3
 	github.com/openfga/language/pkg/go v0.2.0-beta.2.0.20240926131254-992b301a003f
 	github.com/spf13/cobra v1.8.1
-	github.com/zeiss/pkg v0.1.19-0.20241124202009-e50076b31626
+	github.com/zeiss/pkg v0.1.19
 	k8s.io/api v0.31.3
 	k8s.io/apimachinery v0.31.3
 	k8s.io/client-go v0.31.3
