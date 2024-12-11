@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/zeiss/pkg v0.1.19
 	k8s.io/api v0.31.3
-	k8s.io/apimachinery v0.31.3
+	k8s.io/apimachinery v0.31.4
 	k8s.io/client-go v0.31.3
 	sigs.k8s.io/controller-runtime v0.19.3
 	sigs.k8s.io/controller-tools v0.16.5
