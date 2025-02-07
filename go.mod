@@ -5,7 +5,7 @@ toolchain go1.23.3
 
 require (
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/openfga/go-sdk v0.6.4
+	github.com/openfga/go-sdk v0.6.5
 	github.com/openfga/language/pkg/go v0.2.0-beta.2.0.20240926131254-992b301a003f
 	github.com/spf13/cobra v1.8.1
 	github.com/zeiss/pkg v0.1.21
