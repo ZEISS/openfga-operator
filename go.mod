@@ -11,7 +11,7 @@ require (
 	github.com/zeiss/pkg v0.1.23
 	k8s.io/api v0.32.3
 	k8s.io/apimachinery v0.32.3
-	k8s.io/client-go v0.32.2
+	k8s.io/client-go v0.32.3
 	sigs.k8s.io/controller-runtime v0.20.3
 	sigs.k8s.io/controller-tools v0.17.2
 )
