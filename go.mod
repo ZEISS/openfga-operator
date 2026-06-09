@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/openfga/go-sdk v0.8.1
+	github.com/openfga/go-sdk v0.8.2
 	github.com/openfga/language/pkg/go v0.2.1
 	github.com/spf13/cobra v1.10.2
 	github.com/zeiss/pkg v0.1.23
@@ -66,9 +66,9 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.43.0 // indirect
-	go.opentelemetry.io/otel/metric v1.43.0 // indirect
-	go.opentelemetry.io/otel/trace v1.43.0 // indirect
+	go.opentelemetry.io/otel v1.44.0 // indirect
+	go.opentelemetry.io/otel/metric v1.44.0 // indirect
+	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
