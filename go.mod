@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/openfga/go-sdk v0.8.2
-	github.com/openfga/language/pkg/go v0.3.0
+	github.com/openfga/language/pkg/go v0.3.1
 	github.com/spf13/cobra v1.10.2
 	github.com/zeiss/pkg v0.2.0
 	k8s.io/api v0.36.2
