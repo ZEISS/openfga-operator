@@ -1,6 +1,6 @@
 module tools
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/air-verse/air v1.67.4
@@ -10,7 +10,7 @@ require (
 	gotest.tools/gotestsum v1.13.0
 	mvdan.cc/gofumpt v0.12.0
 	sigs.k8s.io/controller-tools v0.22.0
-	sigs.k8s.io/kustomize/kustomize/v5 v5.8.2
+	sigs.k8s.io/kustomize/kustomize/v5 v5.8.3
 )
 
 require (
@@ -534,17 +534,18 @@ require (
 	k8s.io/code-generator v0.37.0 // indirect
 	k8s.io/gengo/v2 v2.0.0-20260408192533-25e2208e0dc3 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
+	k8s.io/kube-openapi v0.0.0-20261001230523-97fa35140926 // indirect
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	mvdan.cc/unparam v0.0.0-20240528143540-8a5130ca722f // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/kind v0.23.0 // indirect
-	sigs.k8s.io/kustomize/api v0.21.2 // indirect
-	sigs.k8s.io/kustomize/cmd/config v0.21.2 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.21.2 // indirect
+	sigs.k8s.io/kustomize/api v0.21.3 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.21.3 // indirect
+	sigs.k8s.io/kustomize/kyaml v0.21.3 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v7 v7.0.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 	software.sslmate.com/src/go-pkcs12 v0.7.2 // indirect
 )
